@@ -31,7 +31,7 @@ python3 generate.py --gpu -1 --sgen sgen --depth 5 --out img/ --num 100
 ```
 
 ## Result
-Generated images when trained 3 epoch for depth=1, 2, 3, 4, and 5 epoch for depth=5.
+Generated images when trained 3 epoch for depth=1, 2, 3, 4, and 5 epoch for depth=10.
 Dataset: CelebA(https://www.kaggle.com/jessicali9530/celeba-dataset/version/2)
 
 ![generated_images1](results/result1.jpg)
