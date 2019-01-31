@@ -21,7 +21,8 @@ class NoiseAdder(Chain):
 			self.s = Const(init.Zero(), (1, ch, 1, 1))
 	
 	def __call__(self, x):
-		z = self.xp.random.normal(size=x.shape).astype(np.float32)
+		z = self.xp.random.normal(size=(x.shape[0], 1, x.shape[2], x.shape[3])).astype(np.float32)
+		z = F.broadcast_to(z, x.shape)
 		s = F.broadcast_to(self.s(), x.shape)
 		return x + s * z
 		
@@ -129,12 +130,12 @@ class Generator(Chain):
 		super(Generator, self).__init__()
 		with self.init_scope():
 			self.b0 = GFirstBlock(512, 512, z_dim, (4, 4))
-			self.b1 = GBlock(512, 512, z_dim, (8, 8))
-			self.b2 = GBlock(512, 256, z_dim, (16, 16))
-			self.b3 = GBlock(256, 128, z_dim, (32, 32))
-			self.b4 = GBlock(128, 64, z_dim, (64, 64))
-			self.b5 = GBlock(64, 32, z_dim, (128, 128))
-			self.b6 = GBlock(32, 16, z_dim, (256, 256))
+			self.b1 = GBlock(512, 256, z_dim, (8, 8))
+			self.b2 = GBlock(256, 128, z_dim, (16, 16))
+			self.b3 = GBlock(128, 64, z_dim, (32, 32))
+			self.b4 = GBlock(64, 32, z_dim, (64, 64))
+			self.b5 = GBlock(32, 16, z_dim, (128, 128))
+#			self.b6 = GBlock(32, 16, z_dim, (256, 256))
 
 		self.depth = depth
 
@@ -167,7 +168,7 @@ class StyleBasedGenerator(Chain):
 		super(StyleBasedGenerator, self).__init__()
 		with self.init_scope():
 			self.G = Generator(depth, z_dim)
-			self.E = StyleEncoder(z_dim, 8)
+			self.E = StyleEncoder(z_dim, 4)
 
 	def make_latent(self, size):
 		return self.E.make_latent(size)
@@ -226,28 +227,28 @@ class Discriminator(Chain):
 		w = init.Normal(1.0)
 		super(Discriminator, self).__init__()
 		with self.init_scope():
+#			self.b1 = DBlock(16, 32)
 			self.b1 = DBlock(16, 32)
 			self.b2 = DBlock(32, 64)
 			self.b3 = DBlock(64, 128)
 			self.b4 = DBlock(128, 256)
 			self.b5 = DBlock(256, 512)
-			self.b6 = DBlock(512, 512)
-			self.b7 = DLastBlock(512, 512)
+			self.b6 = DLastBlock(512, 512)
 			self.l = L.Linear(512, 1, initialW=w)
 
 		self.depth = depth
 
 	def __call__(self, x, alpha=1.0):
 		if self.depth > 0 and alpha < 1:
-			h1 = self['b%d' % (7 - self.depth)](x, True)
+			h1 = self['b%d' % (6 - self.depth)](x, True)
 			x2 = F.average_pooling_2d(x, 2, 2)
-			h2 = F.leaky_relu(self['b%d' % (8 - self.depth)].fromRGB(x2))
+			h2 = F.leaky_relu(self['b%d' % (7 - self.depth)].fromRGB(x2))
 			h = h2 * (1 - alpha) + h1 * alpha
 		else:
-			h = self['b%d' % (7 - self.depth)](x, True)
+			h = self['b%d' % (6 - self.depth)](x, True)
 				
 		for i in range(self.depth):
-			h = self['b%d' % (8 - self.depth + i)](h)
+			h = self['b%d' % (7 - self.depth + i)](h)
 
 		h = self.l(h)
 		h = F.flatten(h)
