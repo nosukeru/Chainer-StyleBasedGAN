@@ -130,11 +130,11 @@ class Generator(Chain):
 		super(Generator, self).__init__()
 		with self.init_scope():
 			self.b0 = GFirstBlock(512, 512, z_dim, (4, 4))
-			self.b1 = GBlock(512, 256, z_dim, (8, 8))
-			self.b2 = GBlock(256, 128, z_dim, (16, 16))
-			self.b3 = GBlock(128, 64, z_dim, (32, 32))
-			self.b4 = GBlock(64, 32, z_dim, (64, 64))
-			self.b5 = GBlock(32, 16, z_dim, (128, 128))
+			self.b1 = GBlock(512, 512, z_dim, (8, 8))
+			self.b2 = GBlock(512, 256, z_dim, (16, 16))
+			self.b3 = GBlock(256, 128, z_dim, (32, 32))
+			self.b4 = GBlock(128, 64, z_dim, (64, 64))
+			self.b5 = GBlock(64, 32, z_dim, (128, 128))
 #			self.b6 = GBlock(32, 16, z_dim, (256, 256))
 
 		self.depth = depth
@@ -168,7 +168,7 @@ class StyleBasedGenerator(Chain):
 		super(StyleBasedGenerator, self).__init__()
 		with self.init_scope():
 			self.G = Generator(depth, z_dim)
-			self.E = StyleEncoder(z_dim, 4)
+			self.E = StyleEncoder(z_dim, 8)
 
 	def make_latent(self, size):
 		return self.E.make_latent(size)
@@ -228,11 +228,11 @@ class Discriminator(Chain):
 		super(Discriminator, self).__init__()
 		with self.init_scope():
 #			self.b1 = DBlock(16, 32)
-			self.b1 = DBlock(16, 32)
-			self.b2 = DBlock(32, 64)
-			self.b3 = DBlock(64, 128)
-			self.b4 = DBlock(128, 256)
-			self.b5 = DBlock(256, 512)
+			self.b1 = DBlock(32, 64)
+			self.b2 = DBlock(64, 128)
+			self.b3 = DBlock(128, 256)
+			self.b4 = DBlock(256, 512)
+			self.b5 = DBlock(512, 512)
 			self.b6 = DLastBlock(512, 512)
 			self.l = L.Linear(512, 1, initialW=w)
 
