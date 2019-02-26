@@ -24,3 +24,4 @@ class CelebADataset(chainer.dataset.DatasetMixin):
 			img = np.transpose(img, (2, 0, 1))
 
 		return img
+		
