@@ -140,10 +140,17 @@ class AEUpdater(chainer.training.StandardUpdater):
 		x_rec = self.sgen.G(w_rec, 1.0)
 		y_rec = self.dis(x_rec, 1.0)
 
-		loss_gen = F.mean_absolute_error(x_rec, x_real)
+		loss_rec = F.mean_squared_error(x_rec, x_real)
 		loss_dis = F.sum(F.softplus(-y_rec)) / batchsize
+		
+		z_fake = self.sgen.make_latent(batch)
+		w_fake = self.sgen.E(z_fake, 1.0)
+		x_fake = self.sgen.G(w_fake, 1.0)
+		w_est = self.enc(x_fake)
 
-		loss = loss_gen + loss_dis
+		loss_lat = F.mean_squared_error(w_est, w_fake)
+
+		loss = loss_gen + loss_dis + loss_lat
 		self.enc.cleargrads()
 		loss.backward()
 		opt_e.update()
