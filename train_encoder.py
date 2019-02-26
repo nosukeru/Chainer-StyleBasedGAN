@@ -10,7 +10,7 @@ from chainer.training import extensions
 import dataset
 import network
 import utils
-from updater import R1Updater
+from updater import AEUpdater
 import os
 import shutil
 
@@ -23,11 +23,11 @@ def train():
 	parser.add_argument('--dis', type=str, default='./dis')
 	parser.add_argument('--opte', type=str, default=None)
 	parser.add_argument('--epoch', '-e', type=int, default=3)
-	parser.add_argument('--lr', '-l', type=float, default=0.001)
+	parser.add_argument('--lr', '-l', type=float, default=0.0001)
 	parser.add_argument('--beta1', type=float, default=0)
 	parser.add_argument('--beta2', type=float, default=0.99)
 	parser.add_argument('--batch', '-b', type=int, default=16)
-	parser.add_argument('--depth', '-d', type=int, default=0)
+	parser.add_argument('--depth', '-d', type=int, default=5)
 	parser.add_argument('--out', '-o', type=str, default='img/')
 	parser.add_argument('--num', '-n', type=int, default=10)
 	args = parser.parse_args()
@@ -74,7 +74,7 @@ def train():
 	def output_image(enc, sgen, train, depth, out, num):
 		@chainer.training.make_extension()
 		def make_image(trainer):
-			x = train[np.random.randint(len(train), size=num)]
+			x = sgen.xp.array(train[np.random.randint(len(train), size=num)]).astype('float32')
 			y = sgen.G(enc(x), 1.0)
 			y = chainer.cuda.to_cpu(y.data)
 
@@ -92,11 +92,11 @@ def train():
 	
 	trainer.run()
 
-	modelname = './results/enc'
+	modelname = './results_encoder/enc'
 	print('saving conv-encoder model to ' + modelname)
 	serializers.save_npz(modelname, enc)
 
-	optname = './results/opt_e'
+	optname = './results_encoder/opt_e'
 	print('saving style-encoder optimizer to ' + optname)
 	serializers.save_npz(optname, opt_e)
 

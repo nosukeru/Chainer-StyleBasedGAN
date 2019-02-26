@@ -136,7 +136,7 @@ class AEUpdater(chainer.training.StandardUpdater):
 		batchsize = len(batch)
 
 		x_real = Variable(xp.array(batch))
-		w_rec = self.enc(x_real, 1.0)
+		w_rec = self.enc(x_real)
 		x_rec = self.sgen.G(w_rec, 1.0)
 		y_rec = self.dis(x_rec, 1.0)
 

@@ -271,7 +271,7 @@ class Discriminator(Chain):
 class ConvEncoder(Chain):
 	def __init__(self):
 		w = init.Normal(1.0)
-		super(Discriminator, self).__init__()
+		super(ConvEncoder, self).__init__()
 		with self.init_scope():
 			self.b1 = DBlock(16, 32)
 			self.b2 = DBlock(32, 64)
@@ -282,9 +282,9 @@ class ConvEncoder(Chain):
 			self.l = L.Linear(512, 512, initialW=w)
 
 	def __call__(self, x):
-		h = x
-		for i in range(6):
-			h = self['b%d' % (i + 1)](h)
+		h = self.b1(x, True)
+		for i in range(5):
+			h = self['b%d' % (i + 2)](h)
 		
 		h = self.l(h)
 		return h
