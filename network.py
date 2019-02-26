@@ -25,6 +25,7 @@ class NoiseAdder(Chain):
 		z = F.broadcast_to(z, x.shape)
 		s = F.broadcast_to(self.s(), x.shape)
 		return x + s * z
+#		return x
 		
 class AdaIN(Chain):
 	def __init__(self, z_dim, ch_out):
@@ -161,6 +162,19 @@ class Generator(Chain):
 			h = self.b0(w, True)
 					
 		return h
+
+	def style_mixing(self, ws):
+		# --- assertion ---
+		# alpha = 1.0
+		# len(ws) = depth + 1
+		# -----------------
+		
+		h = self.b0(ws[0])
+		for i in range(1, self.depth):
+			h = self['b%d' % i](h, ws[i])
+			
+		h = self['b%d' % self.depth](h, ws[self.depth], True)
+		return h
 		
 class StyleBasedGenerator(Chain):
 	def __init__(self, depth):
@@ -253,3 +267,25 @@ class Discriminator(Chain):
 		h = self.l(h)
 		h = F.flatten(h)
 		return h
+
+class ConvEncoder(Chain):
+	def __init__(self):
+		w = init.Normal(1.0)
+		super(Discriminator, self).__init__()
+		with self.init_scope():
+			self.b1 = DBlock(16, 32)
+			self.b2 = DBlock(32, 64)
+			self.b3 = DBlock(64, 64)
+			self.b4 = DBlock(64, 128)
+			self.b5 = DBlock(128, 128)
+			self.b6 = DBlock(128, 128)
+			self.l = L.Linear(512, 512, initialW=w)
+
+	def __call__(self, x):
+		h = x
+		for i in range(6):
+			h = self['b%d' % (i + 1)](h)
+		
+		h = self.l(h)
+		return h
+

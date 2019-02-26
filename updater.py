@@ -119,3 +119,35 @@ class WganGpUpdater(chainer.training.StandardUpdater):
 		reporter.report({'loss_d': F.mean(loss_d), 'loss_l': F.mean(loss_l), 'loss_dr': F.mean(loss_dr), 'dis_loss': dis_loss, 'gen_loss': gen_loss, 'alpha': self.alpha})
 
 		self.alpha = self.alpha + self.delta
+
+
+class AEUpdater(chainer.training.StandardUpdater):
+	def __init__(self, **kwargs):
+		self.enc, self.sgen, self.dis = kwargs.pop('models')
+		super(AEUpdater, self).__init__(**kwargs)
+
+	def update_core(self):
+		opt_e = self.get_optimizer('enc')
+
+		xp = self.sgen.xp
+
+		# train encoder
+		batch = self.get_iterator('main').next()
+		batchsize = len(batch)
+
+		x_real = Variable(xp.array(batch))
+		w_rec = self.enc(x_real, 1.0)
+		x_rec = self.sgen.G(w_rec, 1.0)
+		y_rec = self.dis(x_rec, 1.0)
+
+		loss_gen = F.mean_absolute_error(x_rec, x_real)
+		loss_dis = F.sum(F.softplus(-y_rec)) / batchsize
+
+		loss = loss_gen + loss_dis
+		self.enc.cleargrads()
+		loss.backward()
+		opt_e.update()
+
+		reporter.report({'loss_gen': loss_gen})
+		reporter.report({'loss_dis': loss_dis})
+
