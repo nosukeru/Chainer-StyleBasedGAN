@@ -168,7 +168,7 @@ class StyleBasedGenerator(Chain):
 		super(StyleBasedGenerator, self).__init__()
 		with self.init_scope():
 			self.G = Generator(depth, z_dim)
-			self.E = StyleEncoder(z_dim, 8)
+			self.E = StyleEncoder(z_dim, 4)
 
 	def make_latent(self, size):
 		return self.E.make_latent(size)
