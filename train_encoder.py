@@ -22,7 +22,7 @@ def train():
 	parser.add_argument('--sgen', type=str, default='./sgen')
 	parser.add_argument('--dis', type=str, default='./dis')
 	parser.add_argument('--opte', type=str, default=None)
-	parser.add_argument('--epoch', '-e', type=int, default=3)
+	parser.add_argument('--epoch', '-e', type=int, default=2)
 	parser.add_argument('--lr', '-l', type=float, default=0.001)
 	parser.add_argument('--beta1', type=float, default=0)
 	parser.add_argument('--beta2', type=float, default=0.99)
@@ -86,7 +86,7 @@ def train():
 		return make_image
 			
 	trainer.extend(extensions.LogReport(trigger=(1000, 'iteration')))
-	trainer.extend(extensions.PrintReport(['iteration', 'alpha', 'loss_gen', 'loss_dis']))
+	trainer.extend(extensions.PrintReport(['iteration', 'alpha', 'loss_feat', 'loss_lat']))
 	trainer.extend(output_image(enc, sgen, train, args.depth, args.out, args.num), trigger=(1000, 'iteration'))
 	trainer.extend(extensions.ProgressBar(update_interval=1))	
 	
