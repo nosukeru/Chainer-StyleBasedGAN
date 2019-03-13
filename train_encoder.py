@@ -76,17 +76,21 @@ def train():
 		def make_image(trainer):
 			x = sgen.xp.array(train[np.random.randint(len(train), size=num)]).astype('float32')
 			y = sgen.G(enc(x), 1.0)
+			x = chainer.cuda.to_cpu(x)
 			y = chainer.cuda.to_cpu(y.data)
 
 			for i in range(num):
-				img = y[i].copy()
-				filename = os.path.join(out, '%d_%d.png' % (trainer.updater.iteration, i))
-				utils.save_image(img, filename)
+				img_r = x[i].copy()
+				img_f = y[i].copy()
+				filename_r = os.path.join(out, '%d_%d_r.png' % (trainer.updater.iteration, i))
+				filename_f = os.path.join(out, '%d_%d.png' % (trainer.updater.iteration, i))
+				utils.save_image(img_r, filename_r)
+				utils.save_image(img_f, filename_f)
 
 		return make_image
 			
 	trainer.extend(extensions.LogReport(trigger=(1000, 'iteration')))
-	trainer.extend(extensions.PrintReport(['iteration', 'alpha', 'loss_gen', 'loss_dis']))
+	trainer.extend(extensions.PrintReport(['iteration', 'alpha', 'loss_lat']))
 	trainer.extend(output_image(enc, sgen, train, args.depth, args.out, args.num), trigger=(1000, 'iteration'))
 	trainer.extend(extensions.ProgressBar(update_interval=1))	
 	

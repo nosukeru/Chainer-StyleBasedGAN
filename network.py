@@ -268,6 +268,20 @@ class Discriminator(Chain):
 		h = F.flatten(h)
 		return h
 
+	def feature(self, x, alpha=1.0):
+		if self.depth > 0 and alpha < 1:
+			h1 = self['b%d' % (6 - self.depth)](x, True)
+			x2 = F.average_pooling_2d(x, 2, 2)
+			h2 = F.leaky_relu(self['b%d' % (7 - self.depth)].fromRGB(x2))
+			h = h2 * (1 - alpha) + h1 * alpha
+		else:
+			h = self['b%d' % (6 - self.depth)](x, True)
+				
+		for i in range(self.depth - 1):
+			h = self['b%d' % (7 - self.depth + i)](h)
+
+		return h
+
 class ConvEncoder(Chain):
 	def __init__(self):
 		w = init.Normal(1.0)
